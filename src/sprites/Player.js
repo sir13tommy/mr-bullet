@@ -16,8 +16,8 @@ data[RIGHT] = {
   maxArmAngle: 40,
   minArmAngle: -80,
   weaponPosition: {
-    x: 115 / 2,
-    y: 35 / 2
+    x: 72,
+    y: 18
   },
   baseAngle: 0,
   rotate: 1
@@ -37,8 +37,8 @@ data[LEFT] = {
   maxArmAngle: -100,
   minArmAngle: -180,
   weaponPosition: {
-    x: 115 / 2,
-    y: 35 / 2
+    x: 72,
+    y: 18
   },
   baseAngle: -180,
   rotate: -1
@@ -68,6 +68,14 @@ export default class Player {
     weapon.trackSprite(arm, this.data.weaponPosition.x, this.data.weaponPosition.y, true)
     weapon.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS
     this.weapon = weapon
+
+    this.firingTarget = game.add.image(0, 0, 'target')
+    this.firingTarget.anchor.set(0.5)
+    this.firingTarget.visible = false
+    this.firingTargetPoint = null
+    
+    this.firingLine = new Phaser.Line()
+    this._rotatedPoint = new Phaser.Point(0, 0)
 
     this.lastPointerPosition = null
 
@@ -120,6 +128,19 @@ export default class Player {
     this.timer = game.time.create()
     this.timer.add(Phaser.Timer.SECOND * 5, this.showTutor, this)
     this.timer.start()
+  }
+
+  addHelperLines (lines) {
+    if (!this.helperLines) {
+      this.helperLines = []
+    }
+    for (let name in lines) {
+      let linePoints = lines[name]
+
+      if (linePoints.length >= 2) {
+        this.helperLines.push(new Phaser.Line(linePoints[0].x, linePoints[0].y, linePoints[1].x, linePoints[1].y))
+      }
+    }
   }
   
   restartTimer () {
@@ -194,6 +215,7 @@ export default class Player {
 
   disable () {
     this.disabled = true
+    this.stopTimer()
   }
 
   resizeTutor () {
@@ -230,6 +252,17 @@ export default class Player {
     this.lastPointerPosition = new Phaser.Point(pointer.x, pointer.y)
   }
 
+  updateFiringLine() {
+    this.firingLine.fromAngle(this._rotatedPoint.x, this._rotatedPoint.y, this.arm.rotation, this.game.world.width)
+  }
+
+  calculateRotatedPoint () {
+    const trackedSprite = this.weapon.trackedSprite
+    const trackOffset = this.weapon.trackOffset
+    this._rotatedPoint.set(trackedSprite.world.x + trackOffset.x, trackedSprite.world.y + trackOffset.y)
+    this._rotatedPoint.rotate(trackedSprite.world.x, trackedSprite.world.y, trackedSprite.worldRotation)
+  }
+
   static get LEFT() {
     return LEFT
   }
@@ -248,5 +281,30 @@ export default class Player {
       }
       bullet.prevPosition = bullet.position.clone()
     }
+
+    this.calculateRotatedPoint()
+    this.updateFiringLine()
+
+    this.firingTargetPoint = null
+    this.helperLines.forEach(line => {
+      if (this.firingTargetPoint) {
+        return
+      }
+      this.firingTargetPoint = Phaser.Line.intersects(this.firingLine, line)
+    })
+
+    if (this.firingTargetPoint) {
+      this.firingTarget.position.copyFrom(this.firingTargetPoint)
+      this.firingTarget.visible = true
+    } else {
+      this.firingTarget.visible = false
+    }
+  }
+
+  render() {
+    game.debug.geom(this.firingLine, '#ffffff')
+    this.helperLines.forEach(line => {
+      game.debug.geom(line, '#dd0000')
+    })
   }
 }

@@ -25,6 +25,7 @@ export default class extends Phaser.State {
     this.load.image('title', require('../../assets/images/title.png'))
     this.load.image('btn', require('../../assets/images/btn.png'))
     this.load.image('hand', require('../../assets/images/hand.png'))
+    this.load.image('target', require('../../assets/images/target.png'))
 
     this.load.tilemap('map-1', null, require('../../assets/images/map-1.json'), Phaser.Tilemap.TILED_JSON)
     this.load.tilemap('map-2', null, require('../../assets/images/map-2.json'), Phaser.Tilemap.TILED_JSON)

@@ -58,21 +58,24 @@ export default class extends Phaser.State {
       }
     })
 
-    this.resize()
-  }
-
-  update () {
-    game.physics.arcade.collide(this.player.weapon.bullets, this.ground)
-    game.physics.arcade.collide(this.player.weapon.bullets, this.enemy, (enemy, bullet) => {
-      enemy.tint = 0x000000
-      bullet.kill()
-
-      this.levelComplete()
-    })
-
-    if (this.player) {
-      this.player.update()
+    const helperLines = {
+      'a': [],
+      'b': [],
+      'c': []
     }
+    if (map.objects.lines) {
+      map.objects.lines.forEach(linePoint => {
+        if (linePoint.hasOwnProperty('name')) {
+          helperLines[linePoint.name].push({
+            x: linePoint.x,
+            y: linePoint.y
+          })
+        }
+      })
+    }
+    this.player.addHelperLines(helperLines)
+
+    this.resize()
   }
 
   showResult() {
@@ -192,9 +195,27 @@ export default class extends Phaser.State {
     this.ctaContainer.position.set(width * 0.5, height * 0.8)
   }
 
+  update () {
+    game.physics.arcade.collide(this.player.weapon.bullets, this.ground)
+    game.physics.arcade.collide(this.player.weapon.bullets, this.enemy, (enemy, bullet) => {
+      enemy.tint = 0x000000
+      bullet.kill()
+
+      this.levelComplete()
+    })
+
+    if (this.player) {
+      this.player.update()
+    }
+  }
+
   render() {
     if (__DEV__) {
       // dev logs
+    }
+
+    if (this.player) {
+      this.player.render()
     }
   }
 }

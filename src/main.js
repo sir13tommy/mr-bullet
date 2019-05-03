@@ -17,8 +17,9 @@ window.Phaser = Phaser
 
 class Game extends Phaser.Game {
   constructor () {
-    const width = config.gameWidth
-    const height = config.gameHeight
+    const docElement = document.documentElement
+    const width = docElement.clientWidth > config.gameWidth ? config.gameWidth : docElement.clientWidth
+    const height = docElement.clientHeight > config.gameHeight ? config.gameHeight : docElement.clientHeight
 
     super({
       width: width,
@@ -42,7 +43,10 @@ class Game extends Phaser.Game {
       const game = this
       if (game && game.isBooted) {
         const currentState = game.state.getCurrentState()
-        const {innerWidth: width, innerHeight: height} = window
+        const docElement = document.documentElement
+        const width = docElement.clientWidth > window.innerWidth ? window.innerWidth : docElement.clientWidth
+        const height = docElement.clientHeight > window.innerHeight ? window.innerHeight : docElement.clientHeight
+        
         game.scale.setGameSize(width, height)
         if (currentState && currentState.resize) {
           currentState.resize(width, height)

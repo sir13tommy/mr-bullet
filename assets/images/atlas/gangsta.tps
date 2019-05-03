@@ -132,7 +132,7 @@
             <key>data</key>
             <struct type="DataFile">
                 <key>name</key>
-                <filename>dist/tiles.json</filename>
+                <filename></filename>
             </struct>
         </map>
         <key>multiPack</key>
@@ -180,32 +180,9 @@
             <false/>
         </struct>
         <key>individualSpriteSettings</key>
-        <map type="IndividualSpriteSettingsMap">
-            <key type="filename">tiles/corner_1.png</key>
-            <key type="filename">tiles/corner_2.png</key>
-            <key type="filename">tiles/corner_3.png</key>
-            <key type="filename">tiles/corner_4.png</key>
-            <key type="filename">tiles/tile_1.png</key>
-            <key type="filename">tiles/tile_2.png</key>
-            <key type="filename">tiles/tile_3.png</key>
-            <key type="filename">tiles/tile_4.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>16,16,32,32</rect>
-                <key>scale9Paddings</key>
-                <rect>16,16,32,32</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
-        </map>
+        <map type="IndividualSpriteSettingsMap"/>
         <key>fileList</key>
-        <array>
-            <filename>tiles</filename>
-        </array>
+        <array/>
         <key>ignoreFileList</key>
         <array/>
         <key>replaceList</key>

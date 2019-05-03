@@ -64,9 +64,9 @@ export default class Player {
     this.arm = arm
 
     const weapon = game.add.weapon(1, 'bullet')
-    weapon.bulletSpeed = 800
+    weapon.bulletSpeed = 1100
     weapon.trackSprite(arm, this.data.weaponPosition.x, this.data.weaponPosition.y, true)
-    weapon.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS
+    weapon.bulletKillType = Phaser.Weapon.KILL_CAMERA_BOUNDS
     this.weapon = weapon
 
     this.firingTarget = game.add.image(0, 0, 'target')
@@ -85,27 +85,26 @@ export default class Player {
       }
       if (this.tutor) {
         this.hideTutor()
-        this.disableNextShot = true
-        return
       }
       this.stopTimer()
       game.input.addMoveCallback(this._handleMove, this)
+      this.readyToShot = true
     })
 
     game.input.onUp.add(() => {
       if (this.disabled) {
         return
       }
-      this.startTimer()
-
-      if (this.disableNextShot) {
-        this.disableNextShot = false
+      if (!this.readyToShot) {
         return
       }
+      this.startTimer()
+
       game.input.deleteMoveCallback(this._handleMove, this)
       this.lastPointerPosition = null
       
       this.fire()
+      this.readyToShot = false
     })
 
     if (this.showStartTutor) {
@@ -124,6 +123,9 @@ export default class Player {
   }
 
   startTimer() {
+    if (this.timer) {
+      return
+    }
     const game = this.game
     this.timer = game.time.create()
     this.timer.add(Phaser.Timer.SECOND * 5, this.showTutor, this)
@@ -169,17 +171,18 @@ export default class Player {
 
     this.text = game.make.text(0, 0, 'Swipe to shoot.', {
       font: 'notosans',
-      fontSize: 60,
+      fontSize: 80,
       fill: '#ffffff',
       align: 'center',
       wordWrap: true,
-      wordWrapWidth: 400
+      wordWrapWidth: 600
     })
     this.text.anchor.set(0.5, 0)
     this.tutorContainer.add(this.text)
 
     this.swipeContainer = game.make.group(this.tutorContainer, 'swipe')
     this.hand = game.make.image(0, 0, 'hand')
+    this.hand.anchor.set(0.5, 0.5)
     this.swipeContainer.add(this.hand)
 
     this.hand.alpha = 0
@@ -188,15 +191,19 @@ export default class Player {
       .delay(Phaser.Timer.SECOND * 3)
       .start()
 
+    const tapTween = game.add.tween(this.hand.scale)
+      .to({x: 0.8, y: 0.8}, Phaser.Timer.SECOND * 0.4)
+
     const moveHand = game.add.tween(this.hand)
-      .to({y: 30}, Phaser.Timer.SECOND * 1)
+      .to({y: 50}, Phaser.Timer.SECOND * 1)
       .repeat(-1)
       .yoyo(true)
 
-    showHand.chain(moveHand)
+    showHand.chain(tapTween)
+    tapTween.chain(moveHand)
 
     const showTutor = game.add.tween(this.tutorContainer)
-      .from({alpha: 0})
+      .from({alpha: 0}, Phaser.Timer.SECOND * 0.4)
       .start()
 
     this.resizeTutor()
@@ -302,9 +309,9 @@ export default class Player {
   }
 
   render() {
-    game.debug.geom(this.firingLine, '#ffffff')
+    game.debug.geom(this.firingLine, '#DD0000')
     this.helperLines.forEach(line => {
-      game.debug.geom(line, '#dd0000')
+      game.debug.geom(line, '#00DD00')
     })
   }
 }

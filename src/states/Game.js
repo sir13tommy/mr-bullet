@@ -1,6 +1,7 @@
 /* globals __DEV__, FbPlayableAd */
 import Phaser from 'phaser'
-import Player from '../sprites/Player';
+import Player from '../sprites/Player'
+import Enemy  from '../sprites/Enemy'
 
 const mapsData = {
   'map-1': {
@@ -17,7 +18,7 @@ const mapsData = {
   }
 }
 
-const MAP_BOTTOM_HEIGHT = 64 * 5
+const MAP_BOTTOM_HEIGHT = 64 * 13
 
 export default class extends Phaser.State {
   init (mapName) {
@@ -33,24 +34,27 @@ export default class extends Phaser.State {
     this.back = game.add.image(0, 0, 'back')
     
     const enemy  = new Phaser.Sprite(game, 0, 0, 'enemy')
+    enemy.anchor.set(1, 1)
     game.physics.arcade.enable(enemy)
     enemy.body.immovable = true
     this.enemy = enemy
 
     const map = game.add.tilemap(this.mapName)
     map.addTilesetImage('tiles')
-    map.setCollisionByExclusion([])
 
     const ground = map.createLayer('ground')
     ground.resizeWorld()
     this.ground = ground
+    this.ground.debug = true
+    map.setCollisionByExclusion([])
 
     map.objects.points.forEach(object => {
       if (object.hasOwnProperty('name') && object.name === 'player') {
         this.player = new Player(game, object.x, object.y, this.mapData.direction, this.mapData.showTutor)
       }
       if (object.hasOwnProperty('name') && object.name === 'enemy') {
-        enemy.position.set(object.x, object.y)
+        enemy.left = object.x
+        enemy.top = object.y
         game.world.add(enemy)
       }
       if (object.hasOwnProperty('name') && object.name === 'camera') {
@@ -87,7 +91,7 @@ export default class extends Phaser.State {
     this.overlay.beginFill(0x00000)
     this.overlay.drawRect(0, 0, game.width, game.height)
     this.resultContainer.add(this.overlay)
-    this.overlay.alpha = 0.5
+    this.overlay.alpha = 0.9
 
     this.logo = game.make.image(0, 0, 'logo')
     this.logo.anchor.set(0.5, 0)
@@ -98,9 +102,9 @@ export default class extends Phaser.State {
     this.resultContainer.add(this.title)
 
     const _ctaBtn = game.make.image(0, 0, 'btn')
-    const _ctaText = game.make.text(_ctaBtn.width / 2, _ctaBtn.height / 2, 'NEXT LEVEL', {
+    const _ctaText = game.make.text(_ctaBtn.width / 2, _ctaBtn.height / 2 + 5, 'NEXT LEVEL', {
       font: 'notosans',
-      fontSize: 30,
+      fontSize: 35,
       fill: '#ffffff'
     })
     _ctaText.anchor.set(0.5)
@@ -135,7 +139,9 @@ export default class extends Phaser.State {
   }
 
   action () {
-    console.log('action')
+    if (window.mraid) {
+      mraid.open()
+    }
   }
 
   finishGame () {
@@ -146,7 +152,10 @@ export default class extends Phaser.State {
 
   levelComplete () {
     if (!this.mapData.finish) {
-      this.state.start('Game', true, false, this.mapData.next)
+      this.player.disable()
+      setTimeout(() => {
+        this.state.start('Game', true, false, this.mapData.next)
+      }, Phaser.Timer.SECOND * 1)
     } else {
       this.finishGame()
     }
@@ -167,8 +176,8 @@ export default class extends Phaser.State {
 
     camera.focusOnXY(this.cameraPos.x, this.cameraPos.y)
 
-    scale.scaleSprite(this.back, world.width, world.height, false)
-    this.back.alignIn(world.bounds, Phaser.BOTTOM_CENTER, 0, -MAP_BOTTOM_HEIGHT)
+    scale.scaleSprite(this.back, camera.view.width + 2, camera.view.height + 2, false)
+    this.back.alignIn(camera.view, Phaser.BOTTOM_CENTER, 0, 0)
 
     if (this.resulted) {
       this.resizeResult()
@@ -180,7 +189,7 @@ export default class extends Phaser.State {
   }
 
   resizeResult() {
-    const {scale, camera, width, height} = this.game
+    const {scale, camera, world, width, height} = this.game
 
     this.overlay.width = width
     this.overlay.height = height
@@ -198,8 +207,12 @@ export default class extends Phaser.State {
   update () {
     game.physics.arcade.collide(this.player.weapon.bullets, this.ground)
     game.physics.arcade.collide(this.player.weapon.bullets, this.enemy, (enemy, bullet) => {
-      enemy.tint = 0x000000
       bullet.kill()
+
+      game.add.tween(enemy)
+        .to({angle: 90}, Phaser.Timer.SECOND * 0.6)
+        .easing(Phaser.Easing.Bounce.Out)
+        .start()
 
       this.levelComplete()
     })
@@ -216,6 +229,9 @@ export default class extends Phaser.State {
 
     if (this.player) {
       this.player.render()
+    }
+    if (this.enemy) {
+      this.game.debug.body(this.enemy)
     }
   }
 }

@@ -6,11 +6,12 @@ import Debug from 'phaser-debug/dist/phaser-debug'
 
 export default class extends Phaser.State {
   init() {
-    this.stage.backgroundColor = '#242424'
     this.fontsReady = false
     this.fontsLoaded = this.fontsLoaded.bind(this)
-    if (__DEV__) {
+    if (__DEV__ && this.game.device.desktop) {
       this.game.add.plugin(Debug)
+      this.game.debug.font = '28px monospace'
+      this.game.debug.lineHeight = 32
     }
   }
 

@@ -3,9 +3,9 @@
 
 
 @font-face {
-    font-family: 'sf_pro_textregular';
-    src: url('../assets/fonts/sfprotext-regular-webfont.woff2') format('woff2'),
-         url('../assets/fonts/sfprotext-regular-webfont.woff') format('woff');
+    font-family: 'notosans';
+    src: url('../assets/fonts/notosans-regular-webfont.woff2') format('woff2'),
+         url('../assets/fonts/notosans-regular-webfont.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 

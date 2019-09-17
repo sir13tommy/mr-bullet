@@ -1,5 +1,4 @@
 /* globals __DEV__ */
-import Phaser from 'phaser'
 import WebFont from 'webfontloader'
 import config from '../config';
 import Debug from 'phaser-debug/dist/phaser-debug'

@@ -1,5 +1,4 @@
 /* globals __DEV__, FbPlayableAd */
-import Phaser from 'phaser'
 import Player from '../sprites/Player'
 import Enemy  from '../sprites/Enemy'
 
@@ -18,7 +17,7 @@ const mapsData = {
   }
 }
 
-const MAP_BOTTOM_HEIGHT = 64 * 13
+const MAP_BOTTOM_OFFSET = 64 * 13
 
 export default class extends Phaser.State {
   init (mapName) {
@@ -33,8 +32,7 @@ export default class extends Phaser.State {
 
     this.back = game.add.image(0, 0, 'back')
     
-    const enemy  = new Phaser.Sprite(game, 0, 0, 'enemy')
-    enemy.anchor.set(1, 1)
+    const enemy  = new Enemy(game)
     game.physics.arcade.enable(enemy)
     enemy.body.immovable = true
     this.enemy = enemy
@@ -45,7 +43,7 @@ export default class extends Phaser.State {
     const ground = map.createLayer('ground')
     ground.resizeWorld()
     this.ground = ground
-    this.ground.debug = true
+    // this.ground.debug = true
     map.setCollisionByExclusion([])
 
     map.objects.points.forEach(object => {
@@ -104,9 +102,10 @@ export default class extends Phaser.State {
     const _ctaBtn = game.make.image(0, 0, 'btn')
     const _ctaText = game.make.text(_ctaBtn.width / 2, _ctaBtn.height / 2 + 5, 'NEXT LEVEL', {
       font: 'notosans',
-      fontSize: 35,
+      fontSize: 25,
       fill: '#ffffff'
     })
+    _ctaText.resolution = 2
     _ctaText.anchor.set(0.5)
     _ctaBtn.addChild(_ctaText)
 
@@ -177,7 +176,8 @@ export default class extends Phaser.State {
     camera.focusOnXY(this.cameraPos.x, this.cameraPos.y)
 
     scale.scaleSprite(this.back, camera.view.width + 2, camera.view.height + 2, false)
-    this.back.alignIn(camera.view, Phaser.BOTTOM_CENTER, 0, 0)
+    this.back.centerX = camera.view.centerX
+    this.back.bottom = world.height - MAP_BOTTOM_OFFSET
 
     if (this.resulted) {
       this.resizeResult()
@@ -209,10 +209,7 @@ export default class extends Phaser.State {
     game.physics.arcade.collide(this.player.weapon.bullets, this.enemy, (enemy, bullet) => {
       bullet.kill()
 
-      game.add.tween(enemy)
-        .to({angle: 90}, Phaser.Timer.SECOND * 0.6)
-        .easing(Phaser.Easing.Bounce.Out)
-        .start()
+      enemy.die()
 
       this.levelComplete()
     })
@@ -229,9 +226,6 @@ export default class extends Phaser.State {
 
     if (this.player) {
       this.player.render()
-    }
-    if (this.enemy) {
-      this.game.debug.body(this.enemy)
     }
   }
 }

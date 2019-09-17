@@ -1,7 +1,3 @@
-import 'pixi'
-import 'p2'
-import Phaser from 'phaser'
-
 import BootState from './states/Boot'
 import SplashState from './states/Splash'
 import GameState from './states/Game'
@@ -11,11 +7,10 @@ import config from './config'
 
 window.PhaserGlobal = {
   disableWebAudio: true
-};
+}
 
-window.Phaser = Phaser
 
-class Game extends Phaser.Game {
+export class Game extends Phaser.Game {
   constructor () {
     const docElement = document.documentElement
     const width = docElement.clientWidth > config.gameWidth ? config.gameWidth : docElement.clientWidth

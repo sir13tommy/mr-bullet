@@ -47,6 +47,7 @@ data[LEFT] = {
 export default class Player {
   constructor (game, x, y, direction, showStartTutor) {
     this.game = game
+    this.name = 'player'
     this.data = data[direction]
     this.body = game.add.image(x, y, this.data.bodyFrame)
     this.direction = direction || RIGHT
@@ -64,7 +65,7 @@ export default class Player {
     this.arm = arm
 
     const weapon = game.add.weapon(1, 'bullet')
-    weapon.bulletSpeed = 1100
+    weapon.bulletSpeed = 1000
     weapon.trackSprite(arm, this.data.weaponPosition.x, this.data.weaponPosition.y, true)
     weapon.bulletKillType = Phaser.Weapon.KILL_CAMERA_BOUNDS
     this.weapon = weapon
@@ -75,6 +76,7 @@ export default class Player {
     this.firingTargetPoint = null
     
     this.firingLine = new Phaser.Line()
+    this.firingLineG = game.add.graphics()
     this._rotatedPoint = new Phaser.Point(0, 0)
 
     this.lastPointerPosition = null
@@ -119,6 +121,21 @@ export default class Player {
     if (bullet) {
       this.bullet = bullet
       this.bullet.body.bounce.set(1)
+
+      const emitter = game.add.emitter(bullet.x, bullet.y, 400)
+      emitter.makeParticles('particle')
+      emitter.minParticleSpeed.set(-10, -10)
+      emitter.maxParticleSpeed.set(10, 10)
+      emitter.autoAlpha = true
+      emitter.setAlpha(1, 0)
+      emitter.flow(400, 10, 10)
+      this.emitter = emitter
+      this.weapon.onKill.addOnce(() =>{ 
+        emitter.on = false
+        setTimeout(() => {
+          emitter.destroy()
+        }, 500)
+      })
     }
   }
 
@@ -163,22 +180,24 @@ export default class Player {
     this.tutor = true
     this.tutorContainer = game.add.group(game.stage, 'Tutor Container')
 
-    this.overlay = game.make.graphics(0, 0)
-    this.overlay.beginFill(0x000000)
-    this.overlay.drawRect(0, 0, width, height)
-    this.overlay.alpha = 0.5
-    this.tutorContainer.add(this.overlay)
-
-    this.text = game.make.text(0, 0, 'Swipe to shoot.', {
-      font: 'notosans',
-      fontSize: 80,
-      fill: '#ffffff',
-      align: 'center',
-      wordWrap: true,
-      wordWrapWidth: 600
+    const _text = game.make.text(0, 0, 'swipe to shoot', {
+      font           : 'notosans',
+      fontSize       : 80,
+      fill           : '#ffffff',
+      stroke         : '#000000',
+      strokeThickness: 5,
+      align          : 'center',
+      wordWrap       : true,
+      wordWrapWidth  : 500
     })
-    this.text.anchor.set(0.5, 0)
+    this.text = game.make.image(0, 0, _text.generateTexture())
+    this.text.anchor.set(0.5)
     this.tutorContainer.add(this.text)
+    game.add.tween(this.text.scale)
+      .to({x: 1.1, y: 1.1})
+      .repeat(-1)
+      .yoyo(true)
+      .start()
 
     this.swipeContainer = game.make.group(this.tutorContainer, 'swipe')
     this.hand = game.make.image(0, 0, 'hand')
@@ -194,10 +213,14 @@ export default class Player {
     const tapTween = game.add.tween(this.hand.scale)
       .to({x: 0.8, y: 0.8}, Phaser.Timer.SECOND * 0.4)
 
+    const pointsY = [0, 100]
+    const pointsX = [0, 70, 0]
+
     const moveHand = game.add.tween(this.hand)
-      .to({y: 50}, Phaser.Timer.SECOND * 1)
+      .to({y: pointsY, x: pointsX}, Phaser.Timer.SECOND * 1.5)
+      .interpolation(Phaser.Math.bezierInterpolation)
       .repeat(-1)
-      .yoyo(true)
+      .repeatDelay(Phaser.Timer.SECOND * 0.6)
 
     showHand.chain(tapTween)
     tapTween.chain(moveHand)
@@ -230,11 +253,10 @@ export default class Player {
     const {scale, width, height} = game
 
     if (this.tutor) {
-      this.overlay.width = width
-      this.overlay.height = height
 
       scale.scaleSprite(this.text, width * 0.6, height * 0.4, true)
-      this.text.position.set(width * 0.5, height * 0.05)
+      this.text.x = width * 0.5
+      this.text.y = height * 0.3
 
       this.swipeContainer.alignTo(this.text, Phaser.BOTTOM_CENTER, 0, height * 0.1)
     }
@@ -287,6 +309,11 @@ export default class Player {
         bullet.rotation = rotation
       }
       bullet.prevPosition = bullet.position.clone()
+
+      if (this.emitter) {
+        this.emitter.x = bullet.x
+        this.emitter.y = bullet.y
+      }
     }
 
     this.calculateRotatedPoint()
@@ -309,9 +336,9 @@ export default class Player {
   }
 
   render() {
-    game.debug.geom(this.firingLine, '#DD0000')
-    this.helperLines.forEach(line => {
-      game.debug.geom(line, '#00DD00')
-    })
+    this.firingLineG.clear()
+    this.firingLineG.lineStyle(1, 0xDD0000)
+    this.firingLineG.moveTo(this.firingLine.start.x, this.firingLine.start.y)
+    this.firingLineG.lineTo(this.firingLine.end.x, this.firingLine.end.y)
   }
 }

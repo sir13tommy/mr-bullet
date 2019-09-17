@@ -185,10 +185,13 @@
             <key type="filename">tiles/corner_2.png</key>
             <key type="filename">tiles/corner_3.png</key>
             <key type="filename">tiles/corner_4.png</key>
+            <key type="filename">tiles/corner_5.png</key>
+            <key type="filename">tiles/corner_6.png</key>
             <key type="filename">tiles/tile_1.png</key>
             <key type="filename">tiles/tile_2.png</key>
             <key type="filename">tiles/tile_3.png</key>
             <key type="filename">tiles/tile_4.png</key>
+            <key type="filename">tiles/tile_5.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
